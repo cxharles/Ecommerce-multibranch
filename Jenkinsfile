@@ -1,24 +1,17 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('checkoutservice') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/checkoutservice:latest ."
-                    }
-                }
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/checkoutservice:latest "
-                    }
-                }
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                       dir('/var/lib/jenkins/workspace/10-Tier/src/checkoutservice') {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/checkoutservice:latest .'
+                          sh 'docker push charlesjatto/checkoutservice:latest'
+                          sh 'docker rmi charlesjatto/checkoutservice:latest'
+                     }
+                 }
             }
         }
     }
