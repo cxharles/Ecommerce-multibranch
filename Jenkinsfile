@@ -1,22 +1,15 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('adservice') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/adservice:latest ."
-                    }
-                }
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/adservice:latest "
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                       dir('/var/lib/jenkins/workspace/10-Tier/src/adservice') {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/adservice:latest .'
+                          sh 'docker push charlesjatto/adservice:latest'
+                          sh 'docker rmi charlesjatto/adservice:latest'
                     }
                 }
             }
