@@ -28,7 +28,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adijaiswal/emailservice:latest
+        image: charlesjatto/emailservice:latest
         ports:
         - containerPort: 8080
         env:
@@ -36,14 +36,14 @@ spec:
           value: "8080"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
-          periodSeconds: 5
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
-        livenessProbe:
-          periodSeconds: 5
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        # readinessProbe:
+        #   periodSeconds: 5
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        # livenessProbe:
+        #   periodSeconds: 5
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:8080"]
         resources:
           requests:
             cpu: 100m
@@ -81,15 +81,15 @@ spec:
       serviceAccountName: default
       containers:
         - name: server
-          image: adijaiswal/checkoutservice:latest
+          image: charlesjatto/checkoutservice:latest
           ports:
           - containerPort: 5050
-          readinessProbe:
-            exec:
-              command: ["/bin/grpc_health_probe", "-addr=:5050"]
-          livenessProbe:
-            exec:
-              command: ["/bin/grpc_health_probe", "-addr=:5050"]
+          # readinessProbe:
+          #   exec:
+          #     command: ["/bin/grpc_health_probe", "-addr=:5050"]
+          # livenessProbe:
+          #   exec:
+          #     command: ["/bin/grpc_health_probe", "-addr=:5050"]
           env:
           - name: PORT
             value: "5050"
@@ -143,17 +143,17 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/recommendationservice:latest
+        image: charlesjatto/recommendationservice:latest
         ports:
         - containerPort: 8080
-        readinessProbe:
-          periodSeconds: 5
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
-        livenessProbe:
-          periodSeconds: 5
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        # readinessProbe:
+        #   periodSeconds: 5
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        # livenessProbe:
+        #   periodSeconds: 5
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:8080"]
         env:
         - name: PORT
           value: "8080"
@@ -200,25 +200,25 @@ spec:
       serviceAccountName: default
       containers:
         - name: server
-          image: adijaiswal/frontend:latest
+          image: charlesjatto/frontend:latest
           ports:
           - containerPort: 8080
-          readinessProbe:
-            initialDelaySeconds: 10
-            httpGet:
-              path: "/_healthz"
-              port: 8080
-              httpHeaders:
-              - name: "Cookie"
-                value: "shop_session-id=x-readiness-probe"
-          livenessProbe:
-            initialDelaySeconds: 10
-            httpGet:
-              path: "/_healthz"
-              port: 8080
-              httpHeaders:
-              - name: "Cookie"
-                value: "shop_session-id=x-liveness-probe"
+          # readinessProbe:
+          #   initialDelaySeconds: 10
+          #   httpGet:
+          #     path: "/_healthz"
+          #     port: 8080
+          #     httpHeaders:
+          #     - name: "Cookie"
+          #       value: "shop_session-id=x-readiness-probe"
+          # livenessProbe:
+          #   initialDelaySeconds: 10
+          #   httpGet:
+          #     path: "/_healthz"
+          #     port: 8080
+          #     httpHeaders:
+          #     - name: "Cookie"
+          #       value: "shop_session-id=x-liveness-probe"
           env:
           - name: PORT
             value: "8080"
@@ -259,7 +259,7 @@ kind: Service
 metadata:
   name: frontend
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: frontend
   ports:
@@ -267,18 +267,32 @@ spec:
     port: 80
     targetPort: 8080
 ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: frontend-external
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: frontend
+#   ports:
+#   - name: http
+#     port: 80
+#     targetPort: 8080
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-external
+  name: frontend
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: frontend
   ports:
   - name: http
     port: 80
     targetPort: 8080
+    nodePort: 30200  # Specify a NodePort within the range 30000-32767
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -297,7 +311,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/paymentservice:latest
+        image: charlesjatto/paymentservice:latest
         ports:
         - containerPort: 50051
         env:
@@ -305,12 +319,12 @@ spec:
           value: "50051"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
-        livenessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+        # readinessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:50051"]
+        # livenessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:50051"]
         resources:
           requests:
             cpu: 100m
@@ -349,7 +363,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/productcatalogservice:latest
+        image: charlesjatto/productcatalogservice:latest
         ports:
         - containerPort: 3550
         env:
@@ -357,12 +371,12 @@ spec:
           value: "3550"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:3550"]
-        livenessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:3550"]
+        # readinessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:3550"]
+        # livenessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:3550"]
         resources:
           requests:
             cpu: 100m
@@ -401,7 +415,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/cartservice:latest
+        image: charlesjatto/cartservice:latest
         ports:
         - containerPort: 7070
         env:
@@ -414,15 +428,15 @@ spec:
           limits:
             cpu: 300m
             memory: 128Mi
-        readinessProbe:
-          initialDelaySeconds: 15
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
-        livenessProbe:
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+        # readinessProbe:
+        #   initialDelaySeconds: 15
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+        # livenessProbe:
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 10
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
 ---
 apiVersion: v1
 kind: Service
@@ -465,7 +479,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adijaiswal/loadgenerator:latest
+        image: charlesjatto/loadgenerator:latest
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
@@ -496,7 +510,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/currencyservice:latest
+        image: charlesjatto/currencyservice:latest
         ports:
         - name: grpc
           containerPort: 7000
@@ -505,12 +519,12 @@ spec:
           value: "7000"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:7000"]
-        livenessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:7000"]
+        # readinessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:7000"]
+        # livenessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:7000"]
         resources:
           requests:
             cpu: 100m
@@ -548,7 +562,7 @@ spec:
       serviceAccountName: default
       containers:
       - name: server
-        image: adijaiswal/shippingservice:latest
+        image: charlesjatto/shippingservice:latest
         ports:
         - containerPort: 50051
         env:
@@ -556,13 +570,13 @@ spec:
           value: "50051"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
-          periodSeconds: 5
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
-        livenessProbe:
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+        # readinessProbe:
+        #   periodSeconds: 5
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:50051"]
+        # livenessProbe:
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:50051"]
         resources:
           requests:
             cpu: 100m
@@ -654,7 +668,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/adservice:latest
+        image: charlesjatto/adservice:latest
         ports:
         - containerPort: 9555
         env:
@@ -667,16 +681,16 @@ spec:
           limits:
             cpu: 300m
             memory: 300Mi
-        readinessProbe:
-          initialDelaySeconds: 20
-          periodSeconds: 15
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:9555"]
-        livenessProbe:
-          initialDelaySeconds: 20
-          periodSeconds: 15
-          exec:
-            command: ["/bin/grpc_health_probe", "-addr=:9555"]
+        # readinessProbe:
+        #   initialDelaySeconds: 20
+        #   periodSeconds: 15
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:9555"]
+        # livenessProbe:
+        #   initialDelaySeconds: 20
+        #   periodSeconds: 15
+        #   exec:
+        #     command: ["/bin/grpc_health_probe", "-addr=:9555"]
 ---
 apiVersion: v1
 kind: Service
