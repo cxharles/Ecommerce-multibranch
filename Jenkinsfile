@@ -1,25 +1,16 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('loadgenerator') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/loadgenerator:latest ."
-                    }
-                }
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/loadgenerator:latest"
-                    }
-                }
-            }
-        }
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/loadgenerator:latest .'
+                          sh 'docker push charlesjatto/loadgenerator:latest'
+                          sh 'docker rmi charlesjatto/loadgenerator:latest'
+                 }
+             }
+         }
     }
 }
