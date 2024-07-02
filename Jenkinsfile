@@ -1,25 +1,16 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('currencyservice') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/currencyservice:latest ."
-                    }
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/currencyservice:latest .'
+                          sh 'docker push charlesjatto/currencyservice:latest'
+                          sh 'docker rmi charlesjatto/currencyservice:latest'
                 }
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/currencyservice:latest "
-                    }
-                }
-            }
+             }
         }
     }
 }
