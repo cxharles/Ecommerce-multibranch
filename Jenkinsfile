@@ -1,23 +1,14 @@
 pipeline { 
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('shippingservice') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/shippingservice:latest ."
-                    }
-                }
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/shippingservice:latest "
-                    }
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/shippingservice:latest .'
+                          sh 'docker push charlesjatto/shippingservice:latest'
+                          sh 'docker rmi charlesjatto/shippingservice:latest'
                 }
             }
         }
