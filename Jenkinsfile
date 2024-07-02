@@ -1,25 +1,16 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build & Tag Docker Image') {
+    stage('productcatalogservice') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/productcatalogservice:latest ."
-                    }
+                    withCredentials([string(credentialsId: 'DockerHubCredentials', variable: 'DockerHubCredentials')]) {
+                          sh 'docker login -u charlesjatto -p ${DockerHubCredentials}'
+                          sh 'docker build -t charlesjatto/productcatalogservice:latest .'
+                          sh 'docker push charlesjatto/productcatalogservice:latest'
+                          sh 'docker rmi charlesjatto/productcatalogservice:latest'
                 }
             }
         }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/productcatalogservice:latest "
-                    }
-                }
-            }
-        }
-    }
+     }
 }
